@@ -31,11 +31,19 @@ function initColorButtons() {
     .getElementById("jsColors")
     .getElementsByTagName("div");
 
-  for (let i = 1; i < colorButtons.length; ++i) {
-    colorButtons[i].addEventListener("click", function() {
+  const buttonArray = Array.from(colorButtons);
+
+  buttonArray.forEach(color =>
+    color.addEventListener("click", function() {
       currentColor = this.style.backgroundColor;
-    });
-  }
+    })
+  );
+
+  //   for (let i = 1; i < colorButtons.length; ++i) {
+  //     colorButtons[i].addEventListener("click", function() {
+  //       currentColor = this.style.backgroundColor;
+  //     });
+  //   }
 }
 
 function initRangeBar() {
