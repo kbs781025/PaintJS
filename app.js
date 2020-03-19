@@ -22,6 +22,12 @@ function initFillButton() {
   const fillButton = document.getElementById("jsMode");
   fillButton.addEventListener("click", function() {
     fillMode = !fillMode;
+    if (fillMode) {
+      fillButton.innerText = "Paint";
+    } else {
+      fillButton.innerText = "Fill";
+    }
+
     toggleButtonColor(fillButton);
   });
 }
