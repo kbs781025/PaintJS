@@ -3,11 +3,28 @@ const context = canvas.getContext("2d");
 
 let currentColor = "black";
 let currentLineWidth = "2.5";
+let fillMode = false;
 
 canvas.width = 500;
 canvas.height = 700;
 
 let painting = false;
+
+function toggleButtonColor(button) {
+  if (button.style.backgroundColor === "bisque") {
+    button.style.backgroundColor = "white";
+  } else {
+    button.style.backgroundColor = "bisque";
+  }
+}
+
+function initFillButton() {
+  const fillButton = document.getElementById("jsMode");
+  fillButton.addEventListener("click", function() {
+    fillMode = !fillMode;
+    toggleButtonColor(fillButton);
+  });
+}
 
 function initColorButtons() {
   const colorButtons = document
@@ -30,6 +47,13 @@ function initRangeBar() {
   });
 }
 
+function initCanvases() {
+  canvas.addEventListener("mousemove", onMouseMove);
+  canvas.addEventListener("mousedown", startPainting);
+  canvas.addEventListener("mouseup", stopPainting);
+  canvas.addEventListener("mouseleave", stopPainting);
+}
+
 function onMouseMove(event) {
   const x = event.offsetX;
   const y = event.offsetY;
@@ -45,6 +69,10 @@ function onMouseMove(event) {
 function startPainting() {
   context.strokeStyle = currentColor;
   context.lineWidth = currentLineWidth;
+  if (fillMode) {
+    context.fillStyle = currentColor;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+  }
   painting = true;
 }
 
@@ -52,9 +80,7 @@ function stopPainting() {
   painting = false;
 }
 
-canvas.addEventListener("mousemove", onMouseMove);
-canvas.addEventListener("mousedown", startPainting);
-canvas.addEventListener("mouseup", stopPainting);
-canvas.addEventListener("mouseleave", stopPainting);
+initCanvases();
 initColorButtons();
 initRangeBar();
+initFillButton();
