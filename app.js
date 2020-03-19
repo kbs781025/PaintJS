@@ -1,10 +1,24 @@
 const canvas = document.getElementById("jsCanvas");
 const context = canvas.getContext("2d");
 
+let currentColor = "black";
+
 canvas.width = 500;
 canvas.height = 700;
 
 let painting = false;
+
+function initColorButtons() {
+  const colorButtons = document
+    .getElementById("jsColors")
+    .getElementsByTagName("div");
+
+  for (let i = 1; i < colorButtons.length; ++i) {
+    colorButtons[i].addEventListener("click", function() {
+      currentColor = this.style.backgroundColor;
+    });
+  }
+}
 
 function onMouseMove(event) {
   const x = event.offsetX;
@@ -12,7 +26,6 @@ function onMouseMove(event) {
   if (painting) {
     context.lineTo(x, y);
     context.stroke();
-    context.moveTo(x, y);
   } else {
     context.beginPath(x, y);
     context.moveTo(x, y);
@@ -20,6 +33,7 @@ function onMouseMove(event) {
 }
 
 function startPainting() {
+  context.strokeStyle = currentColor;
   painting = true;
 }
 
@@ -31,3 +45,4 @@ canvas.addEventListener("mousemove", onMouseMove);
 canvas.addEventListener("mousedown", startPainting);
 canvas.addEventListener("mouseup", stopPainting);
 canvas.addEventListener("mouseleave", stopPainting);
+initColorButtons();
