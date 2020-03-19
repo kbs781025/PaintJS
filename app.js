@@ -2,6 +2,7 @@ const canvas = document.getElementById("jsCanvas");
 const context = canvas.getContext("2d");
 
 let currentColor = "black";
+let currentLineWidth = "2.5";
 
 canvas.width = 500;
 canvas.height = 700;
@@ -20,6 +21,15 @@ function initColorButtons() {
   }
 }
 
+function initRangeBar() {
+  const rangeBar = document
+    .getElementById("jsRange")
+    .getElementsByTagName("input")[0];
+  rangeBar.addEventListener("input", function() {
+    currentLineWidth = this.value;
+  });
+}
+
 function onMouseMove(event) {
   const x = event.offsetX;
   const y = event.offsetY;
@@ -34,6 +44,7 @@ function onMouseMove(event) {
 
 function startPainting() {
   context.strokeStyle = currentColor;
+  context.lineWidth = currentLineWidth;
   painting = true;
 }
 
@@ -46,3 +57,4 @@ canvas.addEventListener("mousedown", startPainting);
 canvas.addEventListener("mouseup", stopPainting);
 canvas.addEventListener("mouseleave", stopPainting);
 initColorButtons();
+initRangeBar();
