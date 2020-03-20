@@ -10,6 +10,17 @@ canvas.height = 700;
 
 let painting = false;
 
+function initSaveButton() {
+  const save = document.getElementById("jsSave");
+  save.addEventListener("click", function() {
+    const download = canvas.toDataURL();
+    const anchor = document.createElement("a");
+    anchor.href = download;
+    anchor.download = "Image";
+    anchor.click();
+  });
+}
+
 function toggleButtonColor(button) {
   if (button.style.backgroundColor === "bisque") {
     button.style.backgroundColor = "white";
@@ -66,6 +77,9 @@ function initCanvases() {
   canvas.addEventListener("mousedown", startPainting);
   canvas.addEventListener("mouseup", stopPainting);
   canvas.addEventListener("mouseleave", stopPainting);
+
+  context.fillStyle = "white";
+  context.fillRect(0, 0, canvas.width, canvas.height);
 }
 
 function onMouseMove(event) {
@@ -98,3 +112,4 @@ initCanvases();
 initColorButtons();
 initRangeBar();
 initFillButton();
+initSaveButton();
