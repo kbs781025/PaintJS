@@ -1,14 +1,25 @@
 const canvas = document.getElementById("jsCanvas");
 const context = canvas.getContext("2d");
 
-let currentColor = "black";
+let currentColor = "rgb(0, 0, 0)";
 let currentLineWidth = "2.5";
 let fillMode = false;
+
+let bluelightFactor = 1.0;
 
 canvas.width = 500;
 canvas.height = 700;
 
 let painting = false;
+
+function initFilter() {
+  const range = document.getElementById("jsFilterRange");
+
+  range.addEventListener("input", function(evt) {
+    const value = evt.target.value;
+    bluelightFactor = value / 100;
+  });
+}
 
 function initSaveButton() {
   const save = document.getElementById("jsSave");
@@ -85,6 +96,7 @@ function initCanvases() {
 function onMouseMove(event) {
   const x = event.offsetX;
   const y = event.offsetY;
+
   if (painting) {
     context.lineTo(x, y);
     context.stroke();
@@ -94,11 +106,23 @@ function onMouseMove(event) {
   }
 }
 
+function getCurrentColor() {
+  const parsedRgb = currentColor
+    .substring(4, currentColor.length - 1)
+    .replace(/ /g, "")
+    .split(",");
+  let blue = parsedRgb[2];
+  blue *= bluelightFactor;
+
+  currentColor = `rgb(${parsedRgb[0]}, ${parsedRgb[1]}, ${blue})`;
+  return currentColor;
+}
+
 function startPainting() {
-  context.strokeStyle = currentColor;
+  context.strokeStyle = getCurrentColor();
   context.lineWidth = currentLineWidth;
   if (fillMode) {
-    context.fillStyle = currentColor;
+    context.fillStyle = getCurrentColor();
     context.fillRect(0, 0, canvas.width, canvas.height);
   }
   painting = true;
@@ -113,3 +137,4 @@ initColorButtons();
 initRangeBar();
 initFillButton();
 initSaveButton();
+initFilter();
