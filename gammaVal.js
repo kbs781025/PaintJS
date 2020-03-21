@@ -1,4 +1,3 @@
-//import { interpolateTemp } from "./gammaVal";
 blackbody_color = [
   { Kelvin: 1000, Color: { Red: 1.0, Green: 0.547, Blue: 0.2132 } },
   { Kelvin: 1100, Color: { Red: 1.0, Green: 0.5582, Blue: 0.2258 } },
@@ -93,11 +92,13 @@ blackbody_color = [
   { Kelvin: 10000, Color: { Red: 0.6989, Green: 0.8133, Blue: 1.0 } }
 ];
 
-const interpolateTemp = function(kelvin) {
+export default blackbody_color;
+
+export const interpolateTemp = function(kelvin) {
   let closestIndex = 0;
-  const kelVinFrontplace = Math.floor(kelvin / 100);
-  const index = kelVinFrontplace - 10;
-  if (kelvin % 100 == 0) {
+  const kelVinFrontplace = kelvin & 100;
+  const index = (kelVinFrontplace - 900) / 100;
+  if (kelVinFrontplace == 0) {
     return blackbody_color[index].Color;
   }
 
@@ -106,18 +107,17 @@ const interpolateTemp = function(kelvin) {
 
   const interpolationRate =
     (kelvin - downElement.Kelvin) / (upElement.Kelvin - downElement.Kelvin);
-  //console.log(kelvin, downElement.Kelvin, upElement.Kelvin);
-  //console.log(interpolationRate);
-
   const interpolatedRed =
     downElement.Color.Red +
-    (upElement.Color.Red - downElement.Color.Red) * interpolationRate;
+    (blackbody_color[index].Color.Red - downElement.Color.Red) *
+      interpolationRate;
   const interpolatedGreen =
-    downElement.Color.Green +
-    (upElement.Color.Green - downElement.Color.Green) * interpolationRate;
+    downElement.Color.Red +
+    (blackbody_color[index].Color.Red - downElement.Color.Red) *
+      interpolationRate;
   const interpolatedBlue =
-    downElement.Color.Blue +
-    (blackbody_color[index].Color.Blue - downElement.Color.Blue) *
+    downElement.Color.Red +
+    (blackbody_color[index].Color.Red - downElement.Color.Red) *
       interpolationRate;
 
   return {
@@ -126,183 +126,3 @@ const interpolateTemp = function(kelvin) {
     Blue: interpolatedBlue
   };
 };
-
-const canvas = document.getElementById("jsCanvas");
-const cover = document.getElementById("jsCover");
-const context = canvas.getContext("2d");
-const MIN_TEMP = 1500;
-const MAX_TEMP = 8500;
-
-let currentColor = "rgba(0, 0, 0, 0)";
-let currentLineWidth = "2.5";
-let fillMode = false;
-let colorTemp = 1.0;
-let additionalImageDataPixels = new ImageData(canvas.width, canvas.height).data;
-
-canvas.width = 500;
-canvas.height = 700;
-
-let painting = false;
-
-function storePixels() {
-  const currentImgData = context.getImageData(
-    0,
-    0,
-    canvas.width,
-    canvas.height
-  );
-  for (let i = 0; i < additionalImageDataPixels.length; i += 4) {
-    additionalImageDataPixels[i] = currentImgData.data[i];
-    additionalImageDataPixels[i + 1] = currentImgData.data[i + 1];
-    additionalImageDataPixels[i + 2] = currentImgData.data[i + 2];
-    additionalImageDataPixels[i + 3] = currentImgData.data[i + 3];
-  }
-}
-
-function adjustColorTemp(kelvin, imageData, pixels) {
-  const rgb = interpolateTemp(kelvin);
-
-  for (let i = 0; i < pixels.length; i += 4) {
-    imageData.data[i] = Math.round(rgb.Red * pixels[i]);
-    imageData.data[i + 1] = Math.round(rgb.Green) * pixels[i + 1];
-    imageData.data[i + 2] = Math.round(rgb.Blue * pixels[i + 2]);
-  }
-
-  context.putImageData(imageData, 0, 0);
-}
-
-function initFilter() {
-  const range = document.getElementById("jsFilterRange");
-
-  range.addEventListener("input", function(evt) {
-    const temp = Math.floor(
-      MIN_TEMP + ((MAX_TEMP - MIN_TEMP) * evt.target.value) / 100
-    );
-
-    let imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-    adjustColorTemp(temp, imageData, additionalImageDataPixels);
-  });
-}
-
-function initSaveButton() {
-  const save = document.getElementById("jsSave");
-  save.addEventListener("click", function() {
-    const download = canvas.toDataURL();
-    const anchor = document.createElement("a");
-    anchor.href = download;
-    anchor.download = "Image";
-    anchor.click();
-  });
-}
-
-function toggleButtonColor(button) {
-  if (button.style.backgroundColor === "bisque") {
-    button.style.backgroundColor = "white";
-  } else {
-    button.style.backgroundColor = "bisque";
-  }
-}
-
-function initFillButton() {
-  const fillButton = document.getElementById("jsMode");
-  fillButton.addEventListener("click", function() {
-    fillMode = !fillMode;
-    if (fillMode) {
-      fillButton.innerText = "Paint";
-    } else {
-      fillButton.innerText = "Fill";
-    }
-
-    toggleButtonColor(fillButton);
-  });
-}
-
-function initColorButtons() {
-  const colorButtons = document
-    .getElementById("jsColors")
-    .getElementsByTagName("div");
-
-  const buttonArray = Array.from(colorButtons);
-
-  buttonArray.forEach(color =>
-    color.addEventListener("click", function() {
-      currentColor = this.style.backgroundColor;
-    })
-  );
-}
-
-function initRangeBar() {
-  const rangeBar = document
-    .getElementById("jsRange")
-    .getElementsByTagName("input")[0];
-  rangeBar.addEventListener("input", function() {
-    currentLineWidth = this.value;
-  });
-}
-
-function initCanvases() {
-  canvas.addEventListener("mousemove", onMouseMove);
-  canvas.addEventListener("mousedown", startPainting);
-  canvas.addEventListener("mouseup", stopPainting);
-  canvas.addEventListener("mouseleave", stopPainting);
-
-  context.fillStyle = "white";
-  context.fillRect(0, 0, canvas.width, canvas.height);
-  additionalImageDataPixels = context.getImageData(
-    0,
-    0,
-    canvas.width,
-    canvas.height
-  ).data;
-}
-
-function onMouseMove(event) {
-  const x = event.offsetX;
-  const y = event.offsetY;
-
-  if (painting) {
-    context.lineTo(x, y);
-    context.stroke();
-    storePixels();
-  } else {
-    context.beginPath(x, y);
-    context.moveTo(x, y);
-  }
-}
-
-function getRgbColor(colorString) {
-  // const parsedRgb = currentColor
-  //   .substring(5, currentColor.length - 1)
-  //   .replace(/ /g, "")
-  //   .split(",");
-  const parsedRgb = currentColor.replace(/[^\d,]/g, "").split(",");
-  let blue = parsedRgb[2];
-  blue *= bluelightFactor;
-
-  //return `rgba(${parsedRgb[0]}, ${parsedRgb[1]}, ${blue}, ${bluelightFactor})`;
-  //return `rgba(${parsedRgb[0]}, ${parsedRgb[1]}, ${parsedRgb[2]}, ${bluelightFactor})`;
-  return parsedRgb;
-}
-
-function startPainting() {
-  context.strokeStyle = currentColor;
-  context.lineWidth = currentLineWidth;
-
-  if (fillMode) {
-    context.fillStyle = currentColor;
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    storePixels();
-  }
-  painting = true;
-}
-
-function stopPainting() {
-  painting = false;
-}
-
-initCanvases();
-initColorButtons();
-initRangeBar();
-initFillButton();
-initSaveButton();
-initFilter();
